@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container glass-card">
+            <div class="login-header">
+                <h1>NextGen Admin</h1>
+                <p>Sign in to manage content</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">Sign In</button>
+                <div id="login-error" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>NextGen Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="content">
+                    <span>📝</span> Content Management
+                </a>
+                <a href="#" class="nav-item" data-section="members">
+                    <span>👥</span> Members
+                </a>
+                <a href="#" class="nav-item" data-section="media">
+                    <span>🖼️</span> Media Library
+                </a>
+                <a href="#" class="nav-item" id="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1 id="section-title">Content Management</h1>
+                <div class="user-info">
+                    <span id="username-display"></span>
+                </div>
+            </header>
+
+            <!-- Content Management Section -->
+            <section id="content-section" class="content-section">
+                <div class="content-grid">
+                    <!-- Hero Tagline -->
+                    <div class="content-card glass-card">
+                        <h3>Hero Tagline</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="hero-title-input" placeholder="Enter title">
+                        </div>
+                        <div class="form-group">
+                            <label>Tagline Text</label>
+                            <textarea id="hero-tagline-input" rows="3" placeholder="Enter tagline"></textarea>
+                        </div>
+                        <button class="save-btn" data-key="hero_tagline">Save</button>
+                    </div>
+
+                    <!-- Mission Statement -->
+                    <div class="content-card glass-card">
+                        <h3>Mission Statement</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="mission-title-input" placeholder="Enter title">
+                        </div>
+                        <div class="form-group">
+                            <label>Content</label>
+                            <textarea id="mission-content-input" rows="5" placeholder="Enter mission statement"></textarea>
+                        </div>
+                        <button class="save-btn" data-key="mission_statement">Save</button>
+                    </div>
+
+                    <!-- About Section -->
+                    <div class="content-card glass-card">
+                        <h3>About Section</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="about-title-input" placeholder="Enter title">
+                        </div>
+                        <div class="form-group">
+                            <label>Content</label>
+                            <textarea id="about-content-input" rows="5" placeholder="Enter about text"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="text" id="about-image-input" placeholder="Enter image URL or upload">
+                            <input type="file" id="about-image-file" accept="image/*" style="margin-top: 0.5rem;">
+                        </div>
+                        <button class="save-btn" data-key="about">Save</button>
+                    </div>
+
+                    <!-- Homepage Banner -->
+                    <div class="content-card glass-card">
+                        <h3>Homepage Banner</h3>
+                        <div class="form-group">
+                            <label>Banner Image</label>
+                            <input type="file" id="banner-file" accept="image/*">
+                            <div id="banner-preview" class="image-preview"></div>
+                        </div>
+                        <button class="save-btn" data-key="banner">Save Banner</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Members Section -->
+            <section id="members-section" class="members-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Registered Members</h2>
+                    <button class="export-btn" id="export-csv-btn">Export to CSV</button>
+                </div>
+                <div class="members-stats">
+                    <div class="stat-card glass-card">
+                        <h3 id="total-members">0</h3>
+                        <p>Total Members</p>
+                    </div>
+                </div>
+                <div class="members-table-container glass-card">
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Age</th>
+                                <th>State</th>
+                                <th>LGA</th>
+                                <th>Registered Voter</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-tbody">
+                            <tr>
+                                <td colspan="9" class="loading">Loading members...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Media Library Section -->
+            <section id="media-section" class="media-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Media Library</h2>
+                    <div class="upload-area glass-card">
+                        <input type="file" id="media-upload" multiple accept="image/*,video/*">
+                        <label for="media-upload" class="upload-label">
+                            <span>📤</span> Upload Files
+                        </label>
+                    </div>
+                </div>
+                <div class="media-grid" id="media-grid">
+                    <p class="loading">No media files uploaded yet.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

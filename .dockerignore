@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.db
+.DS_Store
+.vscode
+.idea
