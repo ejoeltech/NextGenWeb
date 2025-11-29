@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Details - NextGen Community</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .conference-detail {
+            padding: 0;
+        }
+        .conference-banner-large {
+            width: 100%;
+            max-height: 550px;
+            object-fit: cover;
+            border-radius: 0;
+            margin-bottom: 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: block;
+        }
+        .conference-header-wrapper {
+            background: linear-gradient(135deg, rgba(0, 201, 109, 0.08) 0%, rgba(230, 57, 70, 0.08) 100%);
+            padding: 4rem 2rem;
+            margin-bottom: 4rem;
+        }
+        .conference-header {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .conference-header h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+        .conference-header p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 900px;
+        }
+        .conference-meta-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2.5rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        .conference-meta-detail span {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .conference-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+        .conference-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        .conference-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .info-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        .section-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-green);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-red));
+            border-radius: 2px;
+        }
+        .info-section p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+        .speakers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+        }
+        .speaker-item {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .speaker-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 201, 109, 0.15);
+        }
+        .speaker-item h4 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+        }
+        .speaker-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        .agenda-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .agenda-item {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-red);
+        }
+        .agenda-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.15);
+        }
+        .agenda-time {
+            font-weight: 700;
+            color: var(--primary-red);
+            min-width: 120px;
+            font-size: 1.05rem;
+            padding: 0.5rem 1rem;
+            background: rgba(230, 57, 70, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .agenda-details {
+            flex: 1;
+        }
+        .agenda-details h4 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .agenda-details p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .register-button-container {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 201, 109, 0.05) 0%, rgba(230, 57, 70, 0.05) 100%);
+            margin-top: 4rem;
+        }
+        .register-btn {
+            padding: 1.5rem 4rem;
+            background: var(--primary-green);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(0, 201, 109, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .register-btn:hover::before {
+            left: 100%;
+        }
+        .register-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 201, 109, 0.4);
+            background: #00b85a;
+        }
+        .register-btn:active {
+            transform: translateY(-1px);
+        }
+        .register-btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-secondary);
+        }
+        @media (max-width: 968px) {
+            .conference-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .conference-header-wrapper {
+                padding: 3rem 1.5rem;
+            }
+            .conference-meta-detail {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .speakers-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <a href="/">
+                    <img src="assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/#home">Home</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#programs">Programs</a></li>
+                <li><a href="/#awareness">Awareness</a></li>
+                <li><a href="/conferences">Conferences</a></li>
+                <li><a href="/#register">Join Us</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="conference-detail">
+        <div class="container">
+            <div id="conference-content">
+                <div class="loading">Loading conference details...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/logo.png" alt="NextGen Logo" id="footer-logo-img">
+                    </div>
+                    <p>Empowering Nigerian youth through political awareness and civic engagement.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p id="contact-info">Email: info@nextgencommunity.ng<br>Phone: +234 XXX XXX XXXX</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon" aria-label="Facebook">📘</a>
+                        <a href="#" class="social-icon" aria-label="Twitter">🐦</a>
+                        <a href="#" class="social-icon" aria-label="Instagram">📷</a>
+                        <a href="#" class="social-icon" aria-label="LinkedIn">💼</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>NGO Compliance</h3>
+                    <p id="ngo-info">Registered as a non-governmental organization committed to youth empowerment and civic education.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 NextGen Community. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const conferenceId = window.location.pathname.split('/').pop();
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+        }
+
+        // Load conference details
+        async function loadConference() {
+            try {
+                const response = await fetch(`${API_BASE}/api/conferences/${conferenceId}`);
+                if (!response.ok) {
+                    throw new Error('Conference not found');
+                }
+                const conference = await response.json();
+
+                const date = new Date(conference.date);
+                const now = new Date();
+                const isPast = date < now;
+
+                const content = document.getElementById('conference-content');
+                const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+                const formattedTime = conference.time ? ` at ${conference.time}` : '';
+                
+                content.innerHTML = `
+                    ${conference.banner ? `<img src="${conference.banner}" alt="${conference.title}" class="conference-banner-large">` : ''}
+                    
+                    <div class="conference-header-wrapper">
+                        <div class="conference-header">
+                            <h1>${conference.title}</h1>
+                            ${conference.description ? `<p>${conference.description}</p>` : ''}
+                            <div class="conference-meta-detail">
+                                <span>📅 ${formattedDate}${formattedTime}</span>
+                                ${conference.venue || conference.address ? `<span>📍 ${conference.venue || ''}${conference.venue && conference.address ? ', ' : ''}${conference.address || ''}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conference-detail">
+                        <div class="conference-content">
+                            <div class="conference-main">
+
+                            ${conference.agenda && conference.agenda.length > 0 ? `
+                                <div class="glass-card">
+                                    <h2 class="section-title">Agenda</h2>
+                                    <div class="agenda-list">
+                                        ${conference.agenda.map(item => `
+                                            <div class="agenda-item">
+                                                <div class="agenda-time">${item.time || ''}</div>
+                                                <div>
+                                                    <strong>${item.title || ''}</strong>
+                                                    ${item.description ? `<p style="margin-top: 0.5rem; color: var(--text-secondary);">${item.description}</p>` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${conference.guidelines ? `
+                                <div class="glass-card">
+                                    <h2 class="section-title">Event Guidelines</h2>
+                                    <div style="line-height: 1.8; color: var(--text-secondary); white-space: pre-line;">${conference.guidelines}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="conference-sidebar">
+                            ${conference.speakers && conference.speakers.length > 0 ? `
+                                <div class="glass-card">
+                                    <h2 class="section-title">Speakers</h2>
+                                    <div class="speakers-list">
+                                        ${conference.speakers.map(speaker => `
+                                            <div class="speaker-item">
+                                                <strong>${speaker.name || ''}</strong>
+                                                ${speaker.title ? `<p style="margin-top: 0.3rem; color: var(--text-secondary); font-size: 0.9rem;">${speaker.title}</p>` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="glass-card">
+                                <h2 class="section-title">Register Now</h2>
+                                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                                    Secure your spot at this empowering event. Registration is free and open to all Nigerian youth.
+                                </p>
+                                <a href="/conference/${conference.id}/register" class="register-btn" ${isPast ? 'style="opacity: 0.5; cursor: not-allowed;" onclick="return false;"' : ''}>
+                                    ${isPast ? 'Event Ended' : 'Pre-Register Now'}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading conference:', error);
+                document.getElementById('conference-content').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Conference Not Found</h3>
+                        <p>The conference you're looking for doesn't exist or has been removed.</p>
+                        <a href="/conferences" class="register-btn" style="margin-top: 2rem;">View All Conferences</a>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadConference);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferences - NextGen Community</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .conferences-hero {
+            padding: 140px 2rem 5rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0, 201, 109, 0.12) 0%, rgba(230, 57, 70, 0.12) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .conferences-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 201, 109, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(230, 57, 70, 0.1) 0%, transparent 50%);
+            z-index: 0;
+        }
+        .conferences-hero > * {
+            position: relative;
+            z-index: 1;
+        }
+        .conferences-hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+        .conferences-hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+            font-weight: 400;
+        }
+        .conferences-section {
+            padding: 4rem 0;
+        }
+        .conferences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2.5rem;
+            padding: 3rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .conference-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .conference-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-red));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .conference-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 48px rgba(0, 201, 109, 0.15), 0 0 0 1px rgba(0, 201, 109, 0.1);
+            border-color: rgba(0, 201, 109, 0.3);
+        }
+        .conference-card:hover::before {
+            opacity: 1;
+        }
+        .conference-banner {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 0;
+            margin: 0;
+            display: block;
+        }
+        .conference-card-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .conference-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--primary-green);
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .conference-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            padding: 1rem;
+            background: rgba(0, 201, 109, 0.03);
+            border-radius: 12px;
+            border-left: 3px solid var(--primary-green);
+        }
+        .conference-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+        .conference-meta span svg,
+        .conference-meta span::before {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        .conference-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+        .conference-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+        .status-upcoming {
+            background: rgba(0, 201, 109, 0.15);
+            color: var(--primary-green);
+        }
+        .status-past {
+            background: rgba(230, 57, 70, 0.15);
+            color: var(--primary-red);
+        }
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-secondary);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        .empty-state h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <a href="/">
+                    <img src="assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/#home">Home</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#programs">Programs</a></li>
+                <li><a href="/#awareness">Awareness</a></li>
+                <li><a href="/conferences">Conferences</a></li>
+                <li><a href="/#register">Join Us</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="conferences-hero">
+        <h1>NextGen Conferences</h1>
+        <p>Join us for empowering events, workshops, and discussions that shape the future of Nigerian youth</p>
+    </section>
+
+    <!-- Conferences Grid -->
+    <section class="conferences-section">
+        <div class="container">
+            <div id="conferences-grid" class="conferences-grid">
+                <div class="loading">Loading conferences...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/logo.png" alt="NextGen Logo" id="footer-logo-img">
+                    </div>
+                    <p>Empowering Nigerian youth through political awareness and civic engagement.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p id="contact-info">Email: info@nextgencommunity.ng<br>Phone: +234 XXX XXX XXXX</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon" aria-label="Facebook">📘</a>
+                        <a href="#" class="social-icon" aria-label="Twitter">🐦</a>
+                        <a href="#" class="social-icon" aria-label="Instagram">📷</a>
+                        <a href="#" class="social-icon" aria-label="LinkedIn">💼</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>NGO Compliance</h3>
+                    <p id="ngo-info">Registered as a non-governmental organization committed to youth empowerment and civic education.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 NextGen Community. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+        }
+
+        // Load conferences
+        async function loadConferences() {
+            try {
+                const response = await fetch(`${API_BASE}/api/conferences`);
+                const conferences = await response.json();
+
+                const grid = document.getElementById('conferences-grid');
+                
+                if (conferences.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Conferences Available</h3>
+                            <p>Check back soon for upcoming events!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = conferences.map(conf => {
+                    const date = new Date(conf.date);
+                    const now = new Date();
+                    const isPast = date < now;
+                    const statusClass = isPast ? 'status-past' : 'status-upcoming';
+                    const statusText = isPast ? 'Past Event' : 'Upcoming';
+
+                    return `
+                        <div class="conference-card">
+                            <a href="/conference/${conf.id}" style="text-decoration: none; color: inherit; display: block;">
+                                ${conf.banner ? `<img src="${conf.banner}" alt="${conf.title}" class="conference-banner">` : ''}
+                                <h3>${conf.title}</h3>
+                                <div class="conference-meta">
+                                    <span>📅 ${new Date(conf.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                    ${conf.time ? `<span>🕐 ${conf.time}</span>` : ''}
+                                    ${conf.venue ? `<span>📍 ${conf.venue}</span>` : ''}
+                                </div>
+                                ${conf.description ? `<p style="color: var(--text-secondary); margin-top: 1rem;">${conf.description.substring(0, 150)}${conf.description.length > 150 ? '...' : ''}</p>` : ''}
+                                <span class="conference-status ${statusClass}">${statusText}</span>
+                            </a>
+                            <div class="conference-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+                                ${!isPast ? `
+                                    <a href="/conference/${conf.id}/register" class="register-btn-card" style="flex: 1; padding: 0.8rem 1.5rem; background: var(--primary-green); border: none; border-radius: 10px; color: white; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s ease; box-shadow: var(--shadow-soft);">
+                                        Register Now
+                                    </a>
+                                ` : `
+                                    <button class="register-btn-card" disabled style="flex: 1; padding: 0.8rem 1.5rem; background: rgba(0, 0, 0, 0.1); border: none; border-radius: 10px; color: var(--text-secondary); font-weight: 600; cursor: not-allowed; opacity: 0.5;">
+                                        Event Ended
+                                    </button>
+                                `}
+                                <button class="share-btn-card" onclick="shareConference(${conf.id}, '${conf.title.replace(/'/g, "\\'")}')" style="padding: 0.8rem 1.5rem; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 10px; color: var(--text-primary); font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>🔗</span> Share
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading conferences:', error);
+                document.getElementById('conferences-grid').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error Loading Conferences</h3>
+                        <p>Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Share conference function
+        function shareConference(conferenceId, title) {
+            const url = `${window.location.origin}/conference/${conferenceId}`;
+            const text = `Check out this conference: ${title}`;
+
+            if (navigator.share) {
+                // Use Web Share API if available
+                navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                    fallbackShare(url, title);
+                });
+            } else {
+                // Fallback to copy to clipboard
+                fallbackShare(url, title);
+            }
+        }
+
+        function fallbackShare(url, title) {
+            // Copy to clipboard
+            navigator.clipboard.writeText(url).then(() => {
+                alert(`Conference link copied to clipboard!\n\n${title}\n${url}`);
+            }).catch(() => {
+                // Fallback if clipboard API fails
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert(`Conference link copied to clipboard!\n\n${title}\n${url}`);
+                } catch (err) {
+                    prompt('Copy this link:', url);
+                }
+                document.body.removeChild(textarea);
+            });
+        }
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadConferences);
+    </script>
+</body>
+</html>
+

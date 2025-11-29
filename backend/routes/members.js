@@ -15,16 +15,20 @@ router.post('/register', async (req, res) => {
       phone,
       email,
       age,
+      date_of_birth,
       gender,
       state,
       lga,
       occupation,
+      is_student,
+      institution,
       is_registered_voter,
+      voter_state,
       not_registered_reason
     } = req.body;
 
     // Validation
-    if (!full_name || !phone || !email || !age || !gender || !state || !lga) {
+    if (!full_name || !phone || !email || (!age && !date_of_birth) || !gender || !state || !lga) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -35,18 +39,22 @@ router.post('/register', async (req, res) => {
     }
 
     await run(
-      `INSERT INTO members (full_name, phone, email, age, gender, state, lga, occupation, is_registered_voter, not_registered_reason)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO members (full_name, phone, email, age, date_of_birth, gender, state, lga, occupation, is_student, institution, is_registered_voter, voter_state, not_registered_reason)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         full_name,
         phone,
         email,
-        age,
+        age || null,
+        date_of_birth || null,
         gender,
         state,
         lga,
         occupation || null,
+        is_student ? 1 : 0,
+        institution || null,
         is_registered_voter ? 1 : 0,
+        voter_state || null,
         not_registered_reason || null
       ]
     );
@@ -94,11 +102,15 @@ router.get('/export', authenticateToken, async (req, res) => {
         { id: 'phone', title: 'Phone' },
         { id: 'email', title: 'Email' },
         { id: 'age', title: 'Age' },
+        { id: 'date_of_birth', title: 'Date of Birth' },
         { id: 'gender', title: 'Gender' },
         { id: 'state', title: 'State' },
         { id: 'lga', title: 'LGA' },
         { id: 'occupation', title: 'Occupation' },
+        { id: 'is_student', title: 'Is Student' },
+        { id: 'institution', title: 'Institution' },
         { id: 'is_registered_voter', title: 'Registered Voter' },
+        { id: 'voter_state', title: 'Voter State' },
         { id: 'not_registered_reason', title: 'Not Registered Reason' },
         { id: 'created_at', title: 'Registration Date' }
       ]
@@ -106,6 +118,7 @@ router.get('/export', authenticateToken, async (req, res) => {
 
     const formattedMembers = members.map(m => ({
       ...m,
+      is_student: m.is_student ? 'Yes' : 'No',
       is_registered_voter: m.is_registered_voter ? 'Yes' : 'No'
     }));
 

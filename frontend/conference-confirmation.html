@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmed - NextGen Community</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .confirmation-section {
+            padding: 140px 2rem 4rem;
+            text-align: center;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 201, 109, 0.05) 0%, rgba(230, 57, 70, 0.05) 100%);
+        }
+        .confirmation-card {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 4rem 3rem;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .confirmation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-red));
+        }
+        .confirmation-card h1 {
+            color: var(--primary-green);
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .confirmation-card h1::before {
+            content: '✅';
+            font-size: 2.5rem;
+        }
+        .confirmation-card p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        .qr-code-container {
+            margin: 2.5rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 3px solid rgba(0, 201, 109, 0.2);
+            position: relative;
+        }
+        .qr-code-container::before {
+            content: '📱';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+        .qr-code-container img {
+            width: 280px;
+            height: 280px;
+            display: block;
+            border-radius: 12px;
+        }
+        .download-btn {
+            padding: 1.2rem 2.5rem;
+            background: var(--primary-green);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(0, 201, 109, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .download-btn:hover::before {
+            left: 100%;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 201, 109, 0.4);
+            background: #00b85a;
+        }
+        .attendee-code-display {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 201, 109, 0.08);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-green);
+        }
+        .attendee-code-display strong {
+            color: var(--primary-green);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+        }
+        .error-message {
+            color: var(--primary-red);
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(230, 57, 70, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-red);
+        }
+        @media (max-width: 768px) {
+            .confirmation-card {
+                padding: 3rem 2rem;
+            }
+            .qr-code-container img {
+                width: 220px;
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <a href="/">
+                    <img src="assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/#home">Home</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#programs">Programs</a></li>
+                <li><a href="/#awareness">Awareness</a></li>
+                <li><a href="/conferences">Conferences</a></li>
+                <li><a href="/#register">Join Us</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="confirmation-section">
+        <div class="confirmation-card">
+            <h1>Registration Confirmed!</h1>
+            <p>Thank you for registering for the conference. Your unique QR code is below. Please save it for check-in at the event.</p>
+                
+                <div id="qr-display">
+                    <div class="loading" style="padding: 2rem;">Loading QR code...</div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <a href="/conferences" class="submit-btn" style="display: inline-block; text-decoration: none; margin-right: 1rem;">View Conferences</a>
+                    <a href="/" class="submit-btn" style="display: inline-block; text-decoration: none; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--primary-green);">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const urlParams = new URLSearchParams(window.location.search);
+        const attendeeCode = urlParams.get('code');
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+        }
+
+        // Load registration details
+        async function loadConfirmation() {
+            if (!attendeeCode) {
+                document.getElementById('qr-display').innerHTML = `
+                    <p style="color: var(--primary-red);">Invalid registration code.</p>
+                `;
+                return;
+            }
+
+            try {
+                // Get registration details (we'll need to add this endpoint or get from conference)
+                const qrDisplay = document.getElementById('qr-display');
+                
+                // For now, construct QR code URL from attendee code
+                // In production, you'd fetch the registration details
+                const qrCodeUrl = `${API_BASE}/uploads/qrcodes/${attendeeCode}.png`;
+                
+                qrDisplay.innerHTML = `
+                    <div class="qr-code-container">
+                        <img src="${qrCodeUrl}" alt="QR Code" id="qr-image" onerror="this.style.display='none'; document.getElementById('qr-error').style.display='block';">
+                        <div id="qr-error" style="display: none; color: var(--primary-red); padding: 2rem;">
+                            QR code image not found. Your registration is confirmed with code: ${attendeeCode}
+                        </div>
+                    </div>
+                    <div class="attendee-code">
+                        Attendee Code: ${attendeeCode}
+                    </div>
+                    <a href="${qrCodeUrl}" download="${attendeeCode}_qr.png" class="download-btn">
+                        Download QR Code
+                    </a>
+                `;
+            } catch (error) {
+                console.error('Error loading confirmation:', error);
+                document.getElementById('qr-display').innerHTML = `
+                    <p style="color: var(--primary-red);">Error loading confirmation details.</p>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadConfirmation);
+    </script>
+</body>
+</html>
+

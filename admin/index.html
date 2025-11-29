@@ -49,6 +49,18 @@
                 <a href="#" class="nav-item" data-section="media">
                     <span>🖼️</span> Media Library
                 </a>
+                <a href="#" class="nav-item" data-section="conferences">
+                    <span>🎤</span> Conferences
+                </a>
+                <a href="#" class="nav-item" data-section="attendance">
+                    <span>📱</span> Attendance Scanner
+                </a>
+                <a href="#" class="nav-item" data-section="reps">
+                    <span>👔</span> Institution Reps
+                </a>
+                <a href="#" class="nav-item" data-section="hero-slider">
+                    <span>🎞️</span> Hero Slider
+                </a>
                 <a href="#" class="nav-item" id="logout-btn">
                     <span>🚪</span> Logout
                 </a>
@@ -178,9 +190,329 @@
                     <p class="loading">No media files uploaded yet.</p>
                 </div>
             </section>
+
+            <!-- Conferences Section -->
+            <section id="conferences-section" class="conferences-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Conferences</h2>
+                    <button class="export-btn" id="new-conference-btn">+ New Conference</button>
+                </div>
+                <div id="conferences-list" class="conferences-list">
+                    <p class="loading">Loading conferences...</p>
+                </div>
+            </section>
+
+            <!-- Institution Reps Section -->
+            <section id="reps-section" class="reps-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Institution Reps</h2>
+                    <div style="display: flex; gap: 1rem;">
+                        <select id="reps-conference-select" class="form-select" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--glass-border);">
+                            <option value="">Select Conference</option>
+                        </select>
+                        <button class="export-btn" id="new-rep-btn">+ New Rep</button>
+                    </div>
+                </div>
+                <div id="reps-list" class="reps-list">
+                    <p class="loading">Select a conference to view reps</p>
+                </div>
+            </section>
+
+            <!-- Institution Reps Section -->
+            <section id="reps-section" class="reps-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Institution Reps</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <select id="reps-conference-select" class="form-control" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border);">
+                            <option value="">Select Conference</option>
+                        </select>
+                        <button class="export-btn" id="new-rep-btn">+ New Rep</button>
+                    </div>
+                </div>
+                <div id="reps-list" class="reps-list" style="margin-top: 2rem;">
+                    <p class="loading">Select a conference to view reps</p>
+                </div>
+            </section>
+
+            <!-- Hero Slider Section -->
+            <section id="hero-slider-section" class="hero-slider-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Hero Slider Manager</h2>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="export-btn" id="save-hero-order-btn">💾 Save Order</button>
+                        <button class="export-btn" id="new-hero-slide-btn">+ New Slide</button>
+                    </div>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 201, 109, 0.05); border-radius: 8px; border-left: 3px solid var(--primary-green);">
+                    💡 <strong>Tip:</strong> Drag slides to reorder. Conference slides (marked with 🎤) are auto-generated when you feature a conference and stay in sync with conference details.
+                </p>
+                <div id="hero-slides-list" class="hero-slides-list">
+                    <p class="loading">Loading hero slides...</p>
+                </div>
+            </section>
+
+            <!-- Attendance Scanner Section -->
+            <section id="attendance-section" class="attendance-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Attendance Scanner</h2>
+                </div>
+                <div class="scanner-container glass-card">
+                    <div class="scanner-controls">
+                        <select id="scanner-conference-select" class="form-control">
+                            <option value="">Select Conference</option>
+                        </select>
+                        <button class="export-btn" id="start-scanner-btn">Start Camera</button>
+                        <button class="export-btn" id="stop-scanner-btn" style="display: none;">Stop Camera</button>
+                    </div>
+                    <div id="scanner-view" style="margin-top: 2rem;">
+                        <video id="scanner-video" style="width: 100%; max-width: 500px; border-radius: 10px; display: none;"></video>
+                        <canvas id="scanner-canvas" style="display: none;"></canvas>
+                        <div id="scanner-result" style="margin-top: 1rem;"></div>
+                    </div>
+                    <div id="scanner-instructions" style="margin-top: 2rem; padding: 1rem; background: rgba(0, 201, 109, 0.1); border-radius: 10px;">
+                        <h3>Instructions:</h3>
+                        <ol style="margin-top: 1rem; line-height: 2;">
+                            <li>Select a conference from the dropdown</li>
+                            <li>Click "Start Camera" to activate your device camera</li>
+                            <li>Point the camera at the QR code</li>
+                            <li>The system will automatically scan and check in the attendee</li>
+                        </ol>
+                    </div>
+                </div>
+                <div id="attendance-list-container" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <h3>Check-ins for Selected Conference</h3>
+                        <button class="export-btn" id="export-attendance-btn" style="display: none;">Export to CSV</button>
+                    </div>
+                    <div id="attendance-list" class="glass-card" style="margin-top: 1rem;">
+                        <p class="loading">Select a conference to view check-ins</p>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
+    <!-- Conference Modal -->
+    <div id="conference-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-card">
+            <span class="close-modal" onclick="closeConferenceModal()">&times;</span>
+            <h2 id="modal-title">New Conference</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Fill in the details below to create a new conference event</p>
+            <form id="conference-form" class="form-grid">
+                <input type="hidden" id="conference-id">
+                
+                <div class="form-group full-width">
+                    <label>Conference Title *</label>
+                    <input type="text" id="conf-title" required placeholder="e.g., NextGen Youth Summit 2024">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea id="conf-description" rows="5" placeholder="Provide a detailed description of the conference, its objectives, and what attendees can expect..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="conf-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Time</label>
+                    <input type="time" id="conf-time" placeholder="Event start time">
+                </div>
+                
+                <div class="form-group">
+                    <label>Venue</label>
+                    <input type="text" id="conf-venue" placeholder="e.g., International Conference Centre">
+                </div>
+                
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="conf-address" placeholder="Full address of the venue">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Banner Image</label>
+                    <input type="text" id="conf-banner" placeholder="Enter image URL or upload a file below">
+                    <input type="file" id="conf-banner-file" accept="image/*" style="margin-top: 0.8rem;">
+                    <p class="form-tip">💡 Upload a high-quality banner image (recommended: 1920x600px) for the conference page</p>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Status *</label>
+                    <select id="conf-status">
+                        <option value="draft">📝 Draft (Not visible to public)</option>
+                        <option value="published">✅ Published (Visible to public)</option>
+                    </select>
+                    <p class="form-tip">
+                        💡 <strong>Tip:</strong> Set to "Published" to make this conference visible on the public website at /conferences. Keep as "Draft" while you're still working on it.
+                    </p>
+                </div>
+                
+                <div class="form-group full-width" style="padding: 1rem; background: rgba(0, 201, 109, 0.05); border-radius: 10px; border-left: 4px solid var(--primary-green); margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 1.05rem;">
+                        <input type="checkbox" id="conf-featured" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary-green);">
+                        <span><strong>✨ Feature this conference in homepage slider</strong></span>
+                    </label>
+                    <p class="form-tip" style="margin-top: 0.5rem; margin-left: 0;">
+                        💡 When enabled and conference is published, a hero slide will be automatically created/updated for this conference.
+                    </p>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Speakers (JSON Format)</label>
+                    <textarea id="conf-speakers" rows="5" placeholder='[{"name": "John Doe", "title": "CEO, Tech Company"}, {"name": "Jane Smith", "title": "Political Analyst"}]'></textarea>
+                    <p class="form-tip">Enter speakers as a JSON array. Each speaker should have "name" and "title" fields.</p>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Agenda / Schedule (JSON Format)</label>
+                    <textarea id="conf-agenda" rows="6" placeholder='[{"time": "9:00 AM", "title": "Opening Remarks", "description": "Welcome address by the host"}, {"time": "10:00 AM", "title": "Keynote Speech", "description": "Main presentation"}]'></textarea>
+                    <p class="form-tip">Enter agenda items as a JSON array. Each item should have "time", "title", and optionally "description" fields.</p>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Event Guidelines / FAQs</label>
+                    <textarea id="conf-guidelines" rows="4" placeholder="Enter event guidelines, rules, FAQs, or any important information for attendees..."></textarea>
+                </div>
+                
+                <div class="form-group full-width" style="margin-top: 1rem; padding-top: 2rem; border-top: 2px solid rgba(0, 0, 0, 0.05);">
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="save-btn" onclick="closeConferenceModal()" style="background: rgba(0, 0, 0, 0.1); color: var(--text-primary); box-shadow: none;">Cancel</button>
+                        <button type="submit" class="save-btn" style="min-width: 180px;">💾 Save Conference</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+            <!-- Hero Slider Section -->
+            <section id="hero-slider-section" class="hero-slider-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Hero Slider Manager</h2>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="export-btn" id="save-hero-order-btn">💾 Save Order</button>
+                        <button class="export-btn" id="new-hero-slide-btn">+ New Slide</button>
+                    </div>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 201, 109, 0.05); border-radius: 8px; border-left: 3px solid var(--primary-green);">
+                    💡 Drag slides to reorder. Conference slides (marked with badge) automatically sync with conference details when featured.
+                </p>
+                <div id="hero-slides-list" class="hero-slides-list">
+                    <p class="loading">Loading hero slides...</p>
+                </div>
+            </section>
+
+            <!-- Hero Slide Modal -->
+            <div id="hero-slide-modal" class="modal" style="display: none;">
+                <div class="modal-content glass-card" style="max-width: 800px;">
+                    <span class="close-modal" onclick="closeHeroSlideModal()">&times;</span>
+                    <h2 id="hero-slide-modal-title">New Hero Slide</h2>
+                    <form id="hero-slide-form">
+                        <input type="hidden" id="hero-slide-id">
+                        <div class="form-group">
+                            <label>Title *</label>
+                            <input type="text" id="hero-slide-title" required placeholder="Enter slide title">
+                        </div>
+                        <div class="form-group">
+                            <label>Subtitle</label>
+                            <textarea id="hero-slide-subtitle" rows="3" placeholder="Enter subtitle or description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Overlay Alignment *</label>
+                            <select id="hero-slide-alignment" required>
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                                <option value="bottom-left">Bottom Left</option>
+                                <option value="bottom-center">Bottom Center</option>
+                                <option value="bottom-right">Bottom Right</option>
+                                <option value="top-left">Top Left</option>
+                                <option value="top-center">Top Center</option>
+                                <option value="top-right">Top Right</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Background Image</label>
+                            <input type="text" id="hero-slide-bg-url" placeholder="Image URL or upload below">
+                            <input type="file" id="hero-slide-bg-file" accept="image/*" style="margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="hero-slide-active" checked style="width: auto;">
+                                <span>Slide is active</span>
+                            </label>
+                        </div>
+                        <div class="form-group" style="margin-top: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <label style="margin: 0;"><strong>Buttons</strong></label>
+                                <button type="button" class="save-btn" onclick="addHeroButton()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">+ Add Button</button>
+                            </div>
+                            <div id="hero-buttons-container">
+                                <!-- Buttons will be added here -->
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="save-btn">💾 Save Slide</button>
+                            <button type="button" class="save-btn" onclick="closeHeroSlideModal()" style="background: var(--primary-red);">Cancel</button>
+                        </div>
+                        <p id="hero-slide-conference-note" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary); display: none; padding: 1rem; background: rgba(0, 201, 109, 0.05); border-radius: 8px;">
+                            ℹ️ This slide is linked to a conference. Title, subtitle, and buttons will automatically sync with conference details.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rep Modal -->
+            <div id="rep-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-card" style="max-width: 600px;">
+            <span class="close-modal">&times;</span>
+            <h2 id="rep-modal-title">New Institution Rep</h2>
+            <form id="rep-form" class="form-grid">
+                <input type="hidden" id="rep-id">
+                <input type="hidden" id="rep-conference-id">
+                <div class="form-group">
+                    <label for="rep-name">Name *</label>
+                    <input type="text" id="rep-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="rep-email">Email *</label>
+                    <input type="email" id="rep-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="rep-phone">Phone *</label>
+                    <input type="tel" id="rep-phone" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="rep-institution">Institution *</label>
+                    <input type="text" id="rep-institution" required placeholder="Enter institution name">
+                    <p class="form-tip" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Students from this institution will be automatically assigned to this rep</p>
+                </div>
+                <div class="form-group full-width" id="rep-referral-code-display" style="display: none;">
+                    <label>Referral Code</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="rep-referral-code" readonly style="flex: 1; background: rgba(0,0,0,0.05); padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-weight: 600; letter-spacing: 2px;">
+                        <button type="button" class="action-btn" onclick="copyReferralCode()">Copy</button>
+                    </div>
+                    <p class="form-tip" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Share this code with participants for referral-based assignment</p>
+                </div>
+                <button type="submit" class="submit-btn full-width">Save Rep</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rep Assignments Modal -->
+    <div id="assignments-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-card" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <span class="close-modal">&times;</span>
+            <h2>Rep Assignments</h2>
+            <div id="assignments-content">
+                <p class="loading">Loading assignments...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

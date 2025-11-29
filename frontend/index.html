@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGen Community - Empowering Nigerian Youth</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +22,7 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#programs">Programs</a></li>
                 <li><a href="#awareness">Awareness</a></li>
+                <li><a href="/conferences">Conferences</a></li>
                 <li><a href="#register">Join Us</a></li>
             </ul>
             <div class="hamburger">
@@ -31,24 +33,27 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Slider Section -->
     <section id="home" class="hero">
-        <div class="hero-background"></div>
-        <div class="hero-content">
-            <div class="hero-logo-container fade-in">
-                <img src="assets/logo.png" alt="NextGen Logo" class="hero-logo" id="hero-logo-img">
+        <div class="hero-slider-container">
+            <div class="swiper hero-swiper">
+                <div class="swiper-wrapper" id="hero-slider-wrapper">
+                    <!-- Slides will be injected by JavaScript -->
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
             </div>
-            <div class="hero-tagline glass-card fade-in-delay">
-                <h1 id="hero-title">Empowering the Next Generation</h1>
-                <p id="hero-tagline-text">Building political awareness and voter education for Nigerian youth aged 15-25</p>
-            </div>
-            <div class="hero-mission glass-card fade-in-delay-2">
+        </div>
+    </section>
+
+    <!-- Mission Section (moved from hero) -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="hero-mission glass-card">
                 <h2>Our Mission</h2>
                 <p id="mission-text">To empower Nigerian youth through political awareness, voter education, and civic engagement. We focus on ages 15-25, providing the tools and knowledge needed to participate actively in the democratic process.</p>
             </div>
-        </div>
-        <div class="scroll-indicator">
-            <div class="mouse"></div>
         </div>
     </section>
 
@@ -173,8 +178,8 @@
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
-                            <label for="age">Age *</label>
-                            <input type="number" id="age" name="age" min="15" max="25" required>
+                            <label for="date_of_birth">Date of Birth *</label>
+                            <input type="date" id="date_of_birth" name="date_of_birth" required>
                         </div>
                     </div>
                     <div class="form-row">
@@ -190,7 +195,9 @@
                         </div>
                         <div class="form-group">
                             <label for="state">State *</label>
-                            <input type="text" id="state" name="state" required>
+                            <select id="state" name="state" required>
+                                <option value="">Select State</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-row">
@@ -204,11 +211,31 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="is_student">Are you a student? *</label>
+                        <select id="is_student" name="is_student" required>
+                            <option value="">Select Option</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="institution-group" style="display: none;">
+                        <label for="institution">Which institution? *</label>
+                        <select id="institution" name="institution">
+                            <option value="">Select Institution</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="is_registered_voter">Are you a registered voter? *</label>
                         <select id="is_registered_voter" name="is_registered_voter" required>
                             <option value="">Select Option</option>
                             <option value="true">Yes</option>
                             <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="voter-state-group" style="display: none;">
+                        <label for="voter_state">Which state are you registered to vote in? *</label>
+                        <select id="voter_state" name="voter_state">
+                            <option value="">Select State</option>
                         </select>
                     </div>
                     <div class="form-group" id="reason-group" style="display: none;">
@@ -268,6 +295,7 @@
         </div>
     </div>
 
+    <script src="nigerian-data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
