@@ -726,6 +726,74 @@ body::before {
     min-width: 200px;
 }
 
+/* Typeahead Styles */
+.typeahead-container {
+    position: relative;
+    width: 100%;
+}
+
+.typeahead-input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.typeahead-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 201, 109, 0.1), 0 4px 12px rgba(0, 201, 109, 0.15);
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+}
+
+.typeahead-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    margin-top: 0.25rem;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 2000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: none;
+    list-style: none;
+    padding: 0.5rem 0;
+}
+
+.typeahead-item {
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+}
+
+.typeahead-item:hover,
+.typeahead-item.selected {
+    background: rgba(0, 201, 109, 0.1);
+    color: var(--primary-green);
+}
+
+.typeahead-item:first-child {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.typeahead-item:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
 /* Hero Slider Styles */
 .hero-slide-item {
     transition: all 0.3s ease;

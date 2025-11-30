@@ -195,9 +195,11 @@
                         </div>
                         <div class="form-group">
                             <label for="state">State *</label>
-                            <select id="state" name="state" required>
-                                <option value="">Select State</option>
-                            </select>
+                            <div class="typeahead-container">
+                                <input type="text" id="state" name="state" class="typeahead-input" autocomplete="off" required placeholder="Type to search state...">
+                                <input type="hidden" id="state-value" name="state">
+                                <ul class="typeahead-dropdown" id="state-dropdown"></ul>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -219,10 +221,12 @@
                         </select>
                     </div>
                     <div class="form-group" id="institution-group" style="display: none;">
-                        <label for="institution">Which institution? *</label>
-                        <select id="institution" name="institution">
-                            <option value="">Select Institution</option>
-                        </select>
+                        <label for="institution">Which institution? * <span style="font-weight: normal; color: var(--text-secondary); font-size: 0.9em;">(Select Other if not listed)</span></label>
+                        <div class="typeahead-container">
+                            <input type="text" id="institution" name="institution" class="typeahead-input" autocomplete="off" placeholder="Type to search institution...">
+                            <input type="hidden" id="institution-value" name="institution">
+                            <ul class="typeahead-dropdown" id="institution-dropdown"></ul>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="is_registered_voter">Are you a registered voter? *</label>
@@ -234,9 +238,11 @@
                     </div>
                     <div class="form-group" id="voter-state-group" style="display: none;">
                         <label for="voter_state">Which state are you registered to vote in? *</label>
-                        <select id="voter_state" name="voter_state">
-                            <option value="">Select State</option>
-                        </select>
+                        <div class="typeahead-container">
+                            <input type="text" id="voter_state" name="voter_state" class="typeahead-input" autocomplete="off" placeholder="Type to search state...">
+                            <input type="hidden" id="voter_state-value" name="voter_state">
+                            <ul class="typeahead-dropdown" id="voter_state-dropdown"></ul>
+                        </div>
                     </div>
                     <div class="form-group" id="reason-group" style="display: none;">
                         <label for="not_registered_reason">If no, why?</label>
@@ -295,7 +301,8 @@
         </div>
     </div>
 
-    <script src="nigerian-data.js"></script>
+    <script src="/nigerian-data.js"></script>
+    <script src="/typeahead.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

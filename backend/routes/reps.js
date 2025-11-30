@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const { query, run } = require('../database');
 const { authenticateToken } = require('./auth');
 const { v4: uuidv4 } = require('uuid');
 
@@ -13,7 +13,7 @@ function generateReferralCode() {
 router.get('/conference/:conferenceId', authenticateToken, async (req, res) => {
   try {
     const { conferenceId } = req.params;
-    const reps = await db.query(
+    const reps = await query(
       'SELECT * FROM institution_reps WHERE conference_id = ? ORDER BY institution, name',
       [conferenceId]
     );
@@ -28,7 +28,7 @@ router.get('/conference/:conferenceId', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const reps = await db.query('SELECT * FROM institution_reps WHERE id = ?', [id]);
+    const reps = await query('SELECT * FROM institution_reps WHERE id = ?', [id]);
     if (reps.length === 0) {
       return res.status(404).json({ error: 'Rep not found' });
     }
@@ -52,29 +52,19 @@ router.post('/', authenticateToken, async (req, res) => {
     let referralCode = generateReferralCode();
     let attempts = 0;
     while (attempts < 10) {
-      const existing = await db.query('SELECT id FROM institution_reps WHERE referral_code = ?', [referralCode]);
+      const existing = await query('SELECT id FROM institution_reps WHERE referral_code = ?', [referralCode]);
       if (existing.length === 0) break;
       referralCode = generateReferralCode();
       attempts++;
     }
 
-    const result = await db.run(
+    const result = await run(
       'INSERT INTO institution_reps (conference_id, name, email, phone, institution, referral_code) VALUES (?, ?, ?, ?, ?, ?)',
       [conference_id, name, email, phone, institution, referralCode]
     );
 
-    res.status(201).json({
-      message: 'Rep created successfully',
-      rep: {
-        id: result.id,
-        conference_id,
-        name,
-        email,
-        phone,
-        institution,
-        referral_code: referralCode
-      }
-    });
+    const newRep = await query('SELECT * FROM institution_reps WHERE id = ?', [result.id]);
+    res.status(201).json(newRep[0]);
   } catch (error) {
     console.error('Create rep error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -91,7 +81,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    const result = await db.run(
+    const result = await run(
       'UPDATE institution_reps SET name = ?, email = ?, phone = ?, institution = ? WHERE id = ?',
       [name, email, phone, institution, id]
     );
@@ -100,7 +90,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Rep not found' });
     }
 
-    res.json({ message: 'Rep updated successfully' });
+    const updatedRep = await query('SELECT * FROM institution_reps WHERE id = ?', [id]);
+    res.json(updatedRep[0]);
   } catch (error) {
     console.error('Update rep error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -113,14 +104,14 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     // Check if rep has assignments
-    const assignments = await db.query('SELECT id FROM rep_assignments WHERE rep_id = ?', [id]);
+    const assignments = await query('SELECT id FROM rep_assignments WHERE rep_id = ?', [id]);
     if (assignments.length > 0) {
       return res.status(400).json({ 
         error: 'Cannot delete rep with existing assignments. Please reassign attendees first.' 
       });
     }
 
-    const result = await db.run('DELETE FROM institution_reps WHERE id = ?', [id]);
+    const result = await run('DELETE FROM institution_reps WHERE id = ?', [id]);
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Rep not found' });
@@ -137,7 +128,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.get('/referral/:code', async (req, res) => {
   try {
     const { code } = req.params;
-    const reps = await db.query('SELECT * FROM institution_reps WHERE referral_code = ?', [code]);
+    const reps = await query('SELECT * FROM institution_reps WHERE referral_code = ?', [code]);
     if (reps.length === 0) {
       return res.status(404).json({ error: 'Invalid referral code' });
     }
@@ -152,7 +143,7 @@ router.get('/referral/:code', async (req, res) => {
 router.get('/conference/:conferenceId/institution/:institution', authenticateToken, async (req, res) => {
   try {
     const { conferenceId, institution } = req.params;
-    const reps = await db.query(
+    const reps = await query(
       'SELECT * FROM institution_reps WHERE conference_id = ? AND institution = ?',
       [conferenceId, institution]
     );

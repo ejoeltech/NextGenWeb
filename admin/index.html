@@ -484,8 +484,12 @@
                     <input type="tel" id="rep-phone" required>
                 </div>
                 <div class="form-group full-width">
-                    <label for="rep-institution">Institution *</label>
-                    <input type="text" id="rep-institution" required placeholder="Enter institution name">
+                    <label for="rep-institution">Institution * <span style="font-weight: normal; color: var(--text-secondary); font-size: 0.9em;">(Select Other if not listed)</span></label>
+                    <div class="typeahead-container">
+                        <input type="text" id="rep-institution" name="rep-institution" class="typeahead-input" autocomplete="off" required placeholder="Type to search institution...">
+                        <input type="hidden" id="rep-institution-value">
+                        <ul class="typeahead-dropdown" id="rep-institution-dropdown"></ul>
+                    </div>
                     <p class="form-tip" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Students from this institution will be automatically assigned to this rep</p>
                 </div>
                 <div class="form-group full-width" id="rep-referral-code-display" style="display: none;">
@@ -513,6 +517,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="/nigerian-data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

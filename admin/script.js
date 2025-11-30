@@ -964,3 +964,264 @@ document.getElementById('export-attendance-btn')?.addEventListener('click', () =
     }
 });
 
+// ========== INSTITUTION REPS ==========
+
+async function loadRepsConferences() {
+    try {
+        const response = await fetch(`${API_BASE}/api/conferences?status=all`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const conferences = await response.json();
+        
+        const select = document.getElementById('reps-conference-select');
+        if (!select) {
+            console.error('reps-conference-select element not found');
+            return;
+        }
+        
+        select.innerHTML = '<option value="">Select Conference</option>' +
+            conferences.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+        
+        // Remove existing event listeners by cloning the select
+        const newSelect = select.cloneNode(true);
+        select.parentNode.replaceChild(newSelect, select);
+        
+        // Add change event listener
+        newSelect.addEventListener('change', (e) => {
+            if (e.target.value) {
+                loadReps(e.target.value);
+            } else {
+                document.getElementById('reps-list').innerHTML = '<p class="loading">Select a conference to view reps</p>';
+            }
+        });
+    } catch (error) {
+        console.error('Error loading conferences for reps:', error);
+        const select = document.getElementById('reps-conference-select');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading conferences</option>';
+        }
+    }
+}
+
+async function loadReps(conferenceId) {
+    try {
+        const response = await fetch(`${API_BASE}/api/reps/conference/${conferenceId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const reps = await response.json();
+        
+        const list = document.getElementById('reps-list');
+        if (!list) return;
+        
+        if (reps.length === 0) {
+            list.innerHTML = '<p class="loading">No reps assigned for this conference yet.</p>';
+            return;
+        }
+        
+        list.innerHTML = reps.map(rep => `
+            <div class="glass-card" style="margin-bottom: 1rem; padding: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">${rep.name}</h3>
+                        <p style="color: var(--text-secondary); margin: 0.3rem 0;"><strong>Institution:</strong> ${rep.institution}</p>
+                        <p style="color: var(--text-secondary); margin: 0.3rem 0;"><strong>Email:</strong> ${rep.email}</p>
+                        <p style="color: var(--text-secondary); margin: 0.3rem 0;"><strong>Phone:</strong> ${rep.phone}</p>
+                        ${rep.referral_code ? `<p style="color: var(--primary-green); margin: 0.5rem 0;"><strong>Referral Code:</strong> <code style="background: rgba(0, 201, 109, 0.1); padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600;">${rep.referral_code}</code></p>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                        <button class="action-btn" onclick="editRep(${rep.id}, ${conferenceId})" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
+                        <button class="action-btn" onclick="deleteRep(${rep.id}, ${conferenceId})" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--primary-red);">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading reps:', error);
+        const list = document.getElementById('reps-list');
+        if (list) {
+            list.innerHTML = '<p class="error-message">Failed to load reps.</p>';
+        }
+    }
+}
+
+// New Rep button handler
+document.getElementById('new-rep-btn')?.addEventListener('click', () => {
+    const conferenceId = document.getElementById('reps-conference-select')?.value;
+    if (!conferenceId) {
+        alert('Please select a conference first');
+        return;
+    }
+    openRepModal(null, conferenceId);
+});
+
+function initRepInstitutionTypeahead() {
+    const input = document.getElementById('rep-institution');
+    if (!input || typeof allInstitutions === 'undefined') {
+        // Try loading the script if not available
+        if (typeof allInstitutions === 'undefined') {
+            const script = document.createElement('script');
+            script.src = '/nigerian-data.js';
+            script.onload = () => {
+                if (typeof allInstitutions !== 'undefined' && typeof initTypeahead === 'function') {
+                    initTypeahead('rep-institution', allInstitutions, 'rep-institution-value');
+                }
+            };
+            document.head.appendChild(script);
+        }
+        return;
+    }
+    
+    // Use the typeahead function if available
+    if (typeof initTypeahead === 'function') {
+        initTypeahead('rep-institution', allInstitutions, 'rep-institution-value');
+    }
+}
+
+function openRepModal(rep = null, conferenceId = null) {
+    const modal = document.getElementById('rep-modal');
+    const form = document.getElementById('rep-form');
+    form.reset();
+    
+    // Initialize institution typeahead
+    initRepInstitutionTypeahead();
+    
+    if (rep) {
+        document.getElementById('rep-modal-title').textContent = 'Edit Institution Rep';
+        document.getElementById('rep-id').value = rep.id;
+        document.getElementById('rep-conference-id').value = rep.conference_id;
+        document.getElementById('rep-name').value = rep.name || '';
+        document.getElementById('rep-email').value = rep.email || '';
+        document.getElementById('rep-phone').value = rep.phone || '';
+        
+        // Set institution after typeahead is initialized
+        setTimeout(() => {
+            const institutionInput = document.getElementById('rep-institution');
+            const institutionHidden = document.getElementById('rep-institution-value');
+            if (institutionInput && rep.institution) {
+                institutionInput.value = rep.institution;
+                if (institutionHidden) institutionHidden.value = rep.institution;
+            }
+        }, 200);
+        
+        if (rep.referral_code) {
+            document.getElementById('rep-referral-code').value = rep.referral_code;
+            document.getElementById('rep-referral-code-display').style.display = 'block';
+        } else {
+            document.getElementById('rep-referral-code-display').style.display = 'none';
+        }
+    } else {
+        document.getElementById('rep-modal-title').textContent = 'New Institution Rep';
+        document.getElementById('rep-id').value = '';
+        document.getElementById('rep-conference-id').value = conferenceId || '';
+        document.getElementById('rep-referral-code-display').style.display = 'none';
+    }
+    
+    modal.style.display = 'block';
+}
+
+function closeRepModal() {
+    document.getElementById('rep-modal').style.display = 'none';
+}
+
+// Close modal handlers
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal) modal.style.display = 'none';
+    });
+});
+
+// Rep form submission
+document.getElementById('rep-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('rep-id').value;
+    const conferenceId = document.getElementById('rep-conference-id').value;
+    const data = {
+        conference_id: conferenceId,
+        name: document.getElementById('rep-name').value,
+        email: document.getElementById('rep-email').value,
+        phone: document.getElementById('rep-phone').value,
+        institution: document.getElementById('rep-institution-value')?.value || document.getElementById('rep-institution')?.value
+    };
+    
+    if (!conferenceId) {
+        alert('Conference ID is required');
+        return;
+    }
+    
+    try {
+        const url = id ? `${API_BASE}/api/reps/${id}` : `${API_BASE}/api/reps`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            const savedRep = await response.json();
+            closeRepModal();
+            loadReps(conferenceId);
+            alert('Rep saved successfully!');
+        } else {
+            const errorData = await response.json();
+            alert(`Error saving rep: ${errorData.error || response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error saving rep:', error);
+        alert('Network error. Please try again.');
+    }
+});
+
+async function editRep(repId, conferenceId) {
+    try {
+        const response = await fetch(`${API_BASE}/api/reps/${repId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+            alert('Failed to load rep details');
+            return;
+        }
+        const rep = await response.json();
+        openRepModal(rep, conferenceId);
+    } catch (error) {
+        console.error('Error loading rep:', error);
+        alert('Failed to load rep details');
+    }
+}
+
+async function deleteRep(repId, conferenceId) {
+    if (!confirm('Are you sure you want to delete this rep?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/reps/${repId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            loadReps(conferenceId);
+            alert('Rep deleted successfully');
+        } else {
+            const errorData = await response.json();
+            alert(`Error deleting rep: ${errorData.error || response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error deleting rep:', error);
+        alert('Network error. Please try again.');
+    }
+}
+
+function copyReferralCode() {
+    const referralCodeInput = document.getElementById('rep-referral-code');
+    referralCodeInput.select();
+    referralCodeInput.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(referralCodeInput.value);
+    alert('Referral code copied to clipboard!');
+}
+

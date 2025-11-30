@@ -172,31 +172,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Populate state dropdowns
-function populateStateDropdown(selectId) {
-    const select = document.getElementById(selectId);
-    if (select && typeof nigerianStates !== 'undefined') {
-        nigerianStates.forEach(state => {
-            const option = document.createElement('option');
-            option.value = state;
-            option.textContent = state;
-            select.appendChild(option);
-        });
-    }
-}
-
-// Populate institution dropdown
-function populateInstitutionDropdown() {
-    const select = document.getElementById('institution');
-    if (select && typeof allInstitutions !== 'undefined') {
-        allInstitutions.forEach(institution => {
-            const option = document.createElement('option');
-            option.value = institution;
-            option.textContent = institution;
-            select.appendChild(option);
-        });
-    }
-}
+// Typeahead functionality is handled by typeahead.js
+// These functions are kept for backward compatibility but are no longer used
 
 // Registration Form
 const registrationForm = document.getElementById('registration-form');
@@ -206,13 +183,15 @@ const reasonGroup = document.getElementById('reason-group');
 const voterStateGroup = document.getElementById('voter-state-group');
 const institutionGroup = document.getElementById('institution-group');
 
-// Populate dropdowns on page load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadContent();
     loadHeroSlider();
-    populateStateDropdown('state');
-    populateStateDropdown('voter_state');
-    populateInstitutionDropdown();
+    
+    // Typeaheads will be initialized automatically by typeahead.js
+    if (typeof initAllTypeaheads === 'function') {
+        initAllTypeaheads();
+    }
     
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -282,6 +261,11 @@ if (registrationForm) {
             age--;
         }
 
+        // Get values from typeahead inputs or hidden inputs
+        const stateValue = document.getElementById('state-value')?.value || document.getElementById('state')?.value;
+        const institutionValue = document.getElementById('institution-value')?.value || document.getElementById('institution')?.value;
+        const voterStateValue = document.getElementById('voter_state-value')?.value || document.getElementById('voter_state')?.value;
+
         const data = {
             full_name: formData.get('full_name'),
             phone: formData.get('phone'),
@@ -289,13 +273,13 @@ if (registrationForm) {
             age: age,
             date_of_birth: formData.get('date_of_birth'),
             gender: formData.get('gender'),
-            state: formData.get('state'),
+            state: stateValue,
             lga: formData.get('lga'),
             occupation: formData.get('occupation') || null,
             is_student: formData.get('is_student') === 'true',
-            institution: formData.get('institution') || null,
+            institution: institutionValue || null,
             is_registered_voter: formData.get('is_registered_voter') === 'true',
-            voter_state: formData.get('voter_state') || null,
+            voter_state: voterStateValue || null,
             not_registered_reason: formData.get('not_registered_reason') || null
         };
 
