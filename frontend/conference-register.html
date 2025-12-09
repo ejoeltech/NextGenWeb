@@ -165,9 +165,18 @@
                 conferenceData = await response.json();
                 console.log('Conference data loaded:', conferenceData);
 
-                const date = new Date(conferenceData.date);
-                const now = new Date();
-                const isPast = date < now;
+                const hasDate = conferenceData.date && conferenceData.date.trim() !== '';
+                let date, isPast, dateStr;
+                
+                if (hasDate) {
+                    date = new Date(conferenceData.date);
+                    const now = new Date();
+                    isPast = date < now;
+                    dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                } else {
+                    isPast = false;
+                    dateStr = 'Coming Soon';
+                }
 
                 if (isPast) {
                     document.getElementById('registration-container').innerHTML = `
@@ -181,8 +190,6 @@
                 }
 
                 const container = document.getElementById('registration-container');
-                const eventDate = new Date(conferenceData.date);
-                const dateStr = eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 const venueInfo = conferenceData.venue ? `${conferenceData.venue}${conferenceData.address ? ', ' + conferenceData.address : ''}` : (conferenceData.address || '');
                 
                 container.innerHTML = `

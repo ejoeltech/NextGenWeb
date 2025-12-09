@@ -106,7 +106,7 @@ const init = () => {
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   title TEXT NOT NULL,
                   description TEXT,
-                  date TEXT NOT NULL,
+                  date TEXT,
                   time TEXT,
                   venue TEXT,
                   address TEXT,
@@ -290,6 +290,10 @@ const migrate = () => {
             console.error('Error adding featured_in_slider column:', err2);
             return reject(err2);
           }
+          
+          // Try to remove NOT NULL constraint from date column if it exists
+          // SQLite doesn't support ALTER COLUMN, so we'll handle this in the application code
+          // by allowing empty strings instead of NULL
           console.log('Hero slides migration completed');
           resolve();
         });

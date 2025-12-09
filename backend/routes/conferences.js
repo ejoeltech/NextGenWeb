@@ -21,9 +21,11 @@ async function upsertConferenceHeroSlide(conference) {
 
     // Build subtitle from date and venue
     const subtitleParts = [];
-    if (conference.date) {
+    if (conference.date && conference.date.trim() !== '') {
       const date = new Date(conference.date);
       subtitleParts.push(date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+    } else {
+      subtitleParts.push('Coming Soon');
     }
     if (conference.venue) subtitleParts.push(conference.venue);
     const subtitle = subtitleParts.join(' • ');
@@ -89,11 +91,11 @@ router.get('/', async (req, res) => {
     let params = [];
 
     if (status === 'all') {
-      // Admin can see all
-      sql += ' ORDER BY date DESC, created_at DESC';
+      // Admin can see all - put conferences with dates first, then those without dates
+      sql += ' ORDER BY CASE WHEN date IS NULL OR date = "" THEN 1 ELSE 0 END, date DESC, created_at DESC';
     } else {
-      // Public only sees published
-      sql += ' WHERE status = ? ORDER BY date DESC';
+      // Public only sees published - put conferences with dates first, then those without dates
+      sql += ' WHERE status = ? ORDER BY CASE WHEN date IS NULL OR date = "" THEN 1 ELSE 0 END, date DESC';
       params.push('published');
     }
 
@@ -152,8 +154,28 @@ router.post('/', authenticateToken, async (req, res) => {
       featured_in_slider
     } = req.body;
 
-    if (!title || !date) {
-      return res.status(400).json({ error: 'Title and date are required' });
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    // Validate and stringify speakers if provided
+    let speakersJson = null;
+    if (speakers) {
+      try {
+        speakersJson = Array.isArray(speakers) ? JSON.stringify(speakers) : JSON.stringify(speakers);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid speakers format. Must be a valid JSON array.' });
+      }
+    }
+
+    // Validate and stringify agenda if provided
+    let agendaJson = null;
+    if (agenda) {
+      try {
+        agendaJson = Array.isArray(agenda) ? JSON.stringify(agenda) : JSON.stringify(agenda);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid agenda format. Must be a valid JSON array.' });
+      }
     }
 
     const result = await run(
@@ -162,14 +184,14 @@ router.post('/', authenticateToken, async (req, res) => {
       [
         title,
         description || null,
-        date,
-        time || null,
-        venue || null,
-        address || null,
-        banner || null,
-        speakers ? JSON.stringify(speakers) : null,
-        agenda ? JSON.stringify(agenda) : null,
-        guidelines || null,
+        (date && date.trim() !== '') ? date : '', // Use empty string instead of null for NOT NULL constraint compatibility
+        (time && time.trim() !== '') ? time : null,
+        (venue && venue.trim() !== '') ? venue : null,
+        (address && address.trim() !== '') ? address : null,
+        (banner && banner.trim() !== '') ? banner : null,
+        speakersJson,
+        agendaJson,
+        (guidelines && guidelines.trim() !== '') ? guidelines : null,
         status || 'draft',
         featured_in_slider ? 1 : 0
       ]
@@ -187,7 +209,12 @@ router.post('/', authenticateToken, async (req, res) => {
     res.json(conf);
   } catch (error) {
     console.error('Create conference error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: error.message || 'Server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -210,7 +237,37 @@ router.put('/:id', authenticateToken, async (req, res) => {
       featured_in_slider
     } = req.body;
 
-    await run(
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    // Check if conference exists
+    const existing = await query('SELECT * FROM conferences WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    // Validate and stringify speakers if provided
+    let speakersJson = null;
+    if (speakers) {
+      try {
+        speakersJson = Array.isArray(speakers) ? JSON.stringify(speakers) : JSON.stringify(speakers);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid speakers format. Must be a valid JSON array.' });
+      }
+    }
+
+    // Validate and stringify agenda if provided
+    let agendaJson = null;
+    if (agenda) {
+      try {
+        agendaJson = Array.isArray(agenda) ? JSON.stringify(agenda) : JSON.stringify(agenda);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid agenda format. Must be a valid JSON array.' });
+      }
+    }
+
+    const result = await run(
       `UPDATE conferences 
        SET title = ?, description = ?, date = ?, time = ?, venue = ?, address = ?, 
            banner = ?, speakers = ?, agenda = ?, guidelines = ?, status = ?,
@@ -220,19 +277,23 @@ router.put('/:id', authenticateToken, async (req, res) => {
       [
         title,
         description || null,
-        date,
-        time || null,
-        venue || null,
-        address || null,
-        banner || null,
-        speakers ? JSON.stringify(speakers) : null,
-        agenda ? JSON.stringify(agenda) : null,
-        guidelines || null,
+        (date && date.trim() !== '') ? date : '', // Use empty string instead of null for NOT NULL constraint compatibility
+        (time && time.trim() !== '') ? time : null,
+        (venue && venue.trim() !== '') ? venue : null,
+        (address && address.trim() !== '') ? address : null,
+        (banner && banner.trim() !== '') ? banner : null,
+        speakersJson,
+        agendaJson,
+        (guidelines && guidelines.trim() !== '') ? guidelines : null,
         status || 'draft',
         featured_in_slider ? 1 : 0,
         id
       ]
     );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Conference not found or no changes made' });
+    }
 
     const updated = await query('SELECT * FROM conferences WHERE id = ?', [id]);
     const conf = updated[0];
@@ -246,7 +307,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(conf);
   } catch (error) {
     console.error('Update conference error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: error.message || 'Server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

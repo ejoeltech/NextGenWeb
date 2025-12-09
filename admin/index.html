@@ -61,6 +61,9 @@
                 <a href="#" class="nav-item" data-section="hero-slider">
                     <span>🎞️</span> Hero Slider
                 </a>
+                <a href="#" class="nav-item" data-section="settings">
+                    <span>⚙️</span> Settings
+                </a>
                 <a href="#" class="nav-item" id="logout-btn">
                     <span>🚪</span> Logout
                 </a>
@@ -234,6 +237,36 @@
                 </div>
             </section>
 
+            <!-- Settings Section -->
+            <section id="settings-section" class="settings-section" style="display: none;">
+                <div class="section-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="glass-card" style="max-width: 600px; margin: 2rem auto;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 1.5rem;">Change Password</h3>
+                    <form id="change-password-form" class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="current-password">Current Password *</label>
+                            <input type="password" id="current-password" required autocomplete="current-password">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="new-password">New Password *</label>
+                            <input type="password" id="new-password" required autocomplete="new-password" minlength="6">
+                            <p class="form-tip" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Password must be at least 6 characters long
+                            </p>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="confirm-password">Confirm New Password *</label>
+                            <input type="password" id="confirm-password" required autocomplete="new-password" minlength="6">
+                        </div>
+                        <div id="password-change-error" class="error-message" style="display: none; margin-top: 1rem;"></div>
+                        <div id="password-change-success" class="success-message" style="display: none; margin-top: 1rem;"></div>
+                        <button type="submit" class="submit-btn full-width" style="margin-top: 1rem;">Change Password</button>
+                    </form>
+                </div>
+            </section>
+
             <!-- Hero Slider Section -->
             <section id="hero-slider-section" class="hero-slider-section" style="display: none;">
                 <div class="section-header">
@@ -312,8 +345,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Date *</label>
-                    <input type="date" id="conf-date" required>
+                    <label>Date</label>
+                    <input type="date" id="conf-date">
+                    <p class="form-tip">💡 Leave empty to show as "Coming Soon"</p>
                 </div>
                 
                 <div class="form-group">

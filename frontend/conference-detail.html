@@ -14,11 +14,19 @@
         }
         .conference-banner-large {
             width: 100%;
-            max-height: 550px;
+            height: auto;
+            max-height: none;
+            min-height: 300px;
             object-fit: cover;
             border-radius: 0;
             margin-bottom: 0;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: block;
+        }
+        .conference-banner-container {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 0;
             display: block;
         }
         .conference-header-wrapper {
@@ -264,7 +272,8 @@
         <div class="nav-container">
             <div class="logo-container">
                 <a href="/">
-                    <img src="assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img">
+                    <img src="/assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='inline');">
+                    <span style="display:none; font-weight: 700; font-size: 1.5rem; color: var(--text-primary);">NextGen</span>
                 </a>
             </div>
             <ul class="nav-menu">
@@ -284,10 +293,8 @@
     </nav>
 
     <div class="conference-detail">
-        <div class="container">
-            <div id="conference-content">
-                <div class="loading">Loading conference details...</div>
-            </div>
+        <div id="conference-content" style="width: 100%;">
+            <div class="loading">Loading conference details...</div>
         </div>
     </div>
 
@@ -297,7 +304,8 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img src="assets/logo.png" alt="NextGen Logo" id="footer-logo-img">
+                        <img src="/assets/logo.png" alt="NextGen Logo" id="footer-logo-img" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='inline');">
+                        <span style="display:none; font-weight: 700; font-size: 1.5rem; color: var(--text-dark-primary);">NextGen</span>
                     </div>
                     <p>Empowering Nigerian youth through political awareness and civic engagement.</p>
                 </div>
@@ -348,16 +356,29 @@
                 }
                 const conference = await response.json();
 
-                const date = new Date(conference.date);
-                const now = new Date();
-                const isPast = date < now;
+                const hasDate = conference.date && conference.date.trim() !== '';
+                let date, isPast, formattedDate, formattedTime;
+                
+                if (hasDate) {
+                    date = new Date(conference.date);
+                    const now = new Date();
+                    isPast = date < now;
+                    formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+                    formattedTime = conference.time ? ` at ${conference.time}` : '';
+                } else {
+                    isPast = false;
+                    formattedDate = 'Coming Soon';
+                    formattedTime = '';
+                }
 
                 const content = document.getElementById('conference-content');
-                const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-                const formattedTime = conference.time ? ` at ${conference.time}` : '';
                 
                 content.innerHTML = `
-                    ${conference.banner ? `<img src="${conference.banner}" alt="${conference.title}" class="conference-banner-large">` : ''}
+                    ${conference.banner ? `
+                        <div class="conference-banner-container">
+                            <img src="${conference.banner}" alt="${conference.title}" class="conference-banner-large" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1200\' height=\'400\'%3E%3Crect fill=\'%23f3f4f6\' width=\'1200\' height=\'400\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-family=\'sans-serif\' font-size=\'24\'%3EImage not available%3C/text%3E%3C/svg%3E';">
+                        </div>
+                    ` : ''}
                     
                     <div class="conference-header-wrapper">
                         <div class="conference-header">
@@ -420,7 +441,7 @@
                                     Secure your spot at this empowering event. Registration is free and open to all Nigerian youth.
                                 </p>
                                 <a href="/conference/${conference.id}/register" class="register-btn" ${isPast ? 'style="opacity: 0.5; cursor: not-allowed;" onclick="return false;"' : ''}>
-                                    ${isPast ? 'Event Ended' : 'Pre-Register Now'}
+                                    ${isPast ? 'Event Ended' : hasDate ? 'Pre-Register Now' : 'Pre-Register (Coming Soon)'}
                                 </a>
                             </div>
                         </div>

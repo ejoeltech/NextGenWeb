@@ -9,7 +9,41 @@ function generateReferralCode() {
   return uuidv4().replace(/-/g, '').substring(0, 8).toUpperCase();
 }
 
-// Get all reps for a conference (admin)
+// Get rep by referral code (public - for registration) - must come before /:id
+router.get('/referral/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+    const reps = await query('SELECT * FROM institution_reps WHERE referral_code = ?', [code]);
+    if (reps.length === 0) {
+      return res.status(404).json({ error: 'Invalid referral code' });
+    }
+    res.json(reps[0]);
+  } catch (error) {
+    console.error('Get rep by referral code error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get rep by institution for a conference (for auto-assignment) - must come before /:id
+router.get('/conference/:conferenceId/institution/:institution', authenticateToken, async (req, res) => {
+  try {
+    const { conferenceId, institution } = req.params;
+    const reps = await query(
+      'SELECT * FROM institution_reps WHERE conference_id = ? AND institution = ?',
+      [conferenceId, institution]
+    );
+    if (reps.length === 0) {
+      return res.status(404).json({ error: 'No rep found for this institution' });
+    }
+    // Return the first rep if multiple exist
+    res.json(reps[0]);
+  } catch (error) {
+    console.error('Get rep by institution error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all reps for a conference (admin) - must come before /:id
 router.get('/conference/:conferenceId', authenticateToken, async (req, res) => {
   try {
     const { conferenceId } = req.params;
@@ -24,7 +58,7 @@ router.get('/conference/:conferenceId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get a single rep by ID (admin)
+// Get a single rep by ID (admin) - must come last
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,7 +101,8 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json(newRep[0]);
   } catch (error) {
     console.error('Create rep error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ error: `Server error: ${error.message}` });
   }
 });
 
@@ -124,39 +159,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Get rep by referral code (public - for registration)
-router.get('/referral/:code', async (req, res) => {
-  try {
-    const { code } = req.params;
-    const reps = await query('SELECT * FROM institution_reps WHERE referral_code = ?', [code]);
-    if (reps.length === 0) {
-      return res.status(404).json({ error: 'Invalid referral code' });
-    }
-    res.json(reps[0]);
-  } catch (error) {
-    console.error('Get rep by referral code error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get rep by institution for a conference (for auto-assignment)
-router.get('/conference/:conferenceId/institution/:institution', authenticateToken, async (req, res) => {
-  try {
-    const { conferenceId, institution } = req.params;
-    const reps = await query(
-      'SELECT * FROM institution_reps WHERE conference_id = ? AND institution = ?',
-      [conferenceId, institution]
-    );
-    if (reps.length === 0) {
-      return res.status(404).json({ error: 'No rep found for this institution' });
-    }
-    // Return the first rep if multiple exist
-    res.json(reps[0]);
-  } catch (error) {
-    console.error('Get rep by institution error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
 
 module.exports = router;
 

@@ -120,7 +120,8 @@ function showSection(section) {
         'conferences': 'Conferences',
         'attendance': 'Attendance Scanner',
         'reps': 'Institution Reps',
-        'hero-slider': 'Hero Slider Manager'
+        'hero-slider': 'Hero Slider Manager',
+        'settings': 'Settings'
     };
     document.getElementById('section-title').textContent = titles[section] || 'Dashboard';
 
@@ -133,6 +134,16 @@ function showSection(section) {
         loadRepsConferences();
     } else if (section === 'hero-slider') {
         loadHeroSlides();
+    } else if (section === 'settings') {
+        // Reset password form when opening settings
+        const form = document.getElementById('change-password-form');
+        if (form) {
+            form.reset();
+            const errorDiv = document.getElementById('password-change-error');
+            const successDiv = document.getElementById('password-change-success');
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (successDiv) successDiv.style.display = 'none';
+        }
     }
 }
 
@@ -458,16 +469,18 @@ async function loadConferences() {
         }
 
         list.innerHTML = conferences.map(conf => {
-            const date = new Date(conf.date);
+            const hasDate = conf.date && conf.date.trim() !== '';
+            const dateDisplay = hasDate ? new Date(conf.date).toLocaleDateString() : 'Coming Soon';
             return `
                 <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                         <div>
                             <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">${conf.title}</h3>
-                            <p style="color: var(--text-secondary);">${date.toLocaleDateString()} ${conf.time || ''}</p>
+                            <p style="color: var(--text-secondary);">${dateDisplay} ${conf.time || ''}</p>
                             <span style="display: inline-block; padding: 0.3rem 0.8rem; background: ${conf.status === 'published' ? 'rgba(0, 201, 109, 0.2)' : 'rgba(230, 57, 70, 0.2)'}; color: ${conf.status === 'published' ? 'var(--primary-green)' : 'var(--primary-red)'}; border-radius: 20px; font-size: 0.8rem; margin-top: 0.5rem;">
                                 ${conf.status === 'published' ? '✓ Published' : 'Draft'}
                             </span>
+                            ${!hasDate ? `<span style="display: inline-block; padding: 0.3rem 0.8rem; background: rgba(255, 165, 0, 0.2); color: #ff8c00; border-radius: 20px; font-size: 0.8rem; margin-top: 0.5rem; margin-left: 0.5rem;">⏳ Coming Soon</span>` : ''}
                         </div>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                             ${conf.status === 'published' 
@@ -574,12 +587,28 @@ document.getElementById('conference-form')?.addEventListener('submit', async (e)
             closeConferenceModal();
             loadConferences();
         } else {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            alert(`Error saving conference: ${errorData.error || response.statusText}`);
+            let errorMessage = 'Unknown error';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorData.message || response.statusText;
+                if (errorData.details) {
+                    console.error('Server error details:', errorData.details);
+                }
+            } catch (parseError) {
+                errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                console.error('Failed to parse error response:', parseError);
+            }
+            console.error('Conference save failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorMessage
+            });
+            alert(`Error saving conference: ${errorMessage}\n\nCheck the browser console for more details.`);
         }
     } catch (error) {
-        console.error('Save error:', error);
-        alert(`Error saving conference: ${error.message || 'Network error'}`);
+        console.error('Conference save error:', error);
+        console.error('Error stack:', error.stack);
+        alert(`Error saving conference: ${error.message || 'Network error'}\n\nCheck the browser console for more details.`);
     }
 });
 
@@ -593,7 +622,7 @@ function openConferenceModal(conference = null) {
         document.getElementById('conference-id').value = conference.id;
         document.getElementById('conf-title').value = conference.title || '';
         document.getElementById('conf-description').value = conference.description || '';
-        document.getElementById('conf-date').value = conference.date || '';
+        document.getElementById('conf-date').value = (conference.date && conference.date.trim() !== '') ? conference.date : '';
         document.getElementById('conf-time').value = conference.time || '';
         document.getElementById('conf-venue').value = conference.venue || '';
         document.getElementById('conf-address').value = conference.address || '';
@@ -1008,10 +1037,23 @@ async function loadReps(conferenceId) {
         const response = await fetch(`${API_BASE}/api/reps/conference/${conferenceId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to load reps' }));
+            throw new Error(errorData.error || 'Failed to load reps');
+        }
+        
         const reps = await response.json();
         
         const list = document.getElementById('reps-list');
         if (!list) return;
+        
+        // Check if reps is an array
+        if (!Array.isArray(reps)) {
+            console.error('Expected array but got:', reps);
+            list.innerHTML = '<p class="error-message">Error: Invalid response format</p>';
+            return;
+        }
         
         if (reps.length === 0) {
             list.innerHTML = '<p class="loading">No reps assigned for this conference yet.</p>';
@@ -1039,7 +1081,7 @@ async function loadReps(conferenceId) {
         console.error('Error loading reps:', error);
         const list = document.getElementById('reps-list');
         if (list) {
-            list.innerHTML = '<p class="error-message">Failed to load reps.</p>';
+            list.innerHTML = `<p class="error-message">Failed to load reps: ${error.message || 'Unknown error'}</p>`;
         }
     }
 }
@@ -1137,16 +1179,27 @@ document.getElementById('rep-form')?.addEventListener('submit', async (e) => {
     
     const id = document.getElementById('rep-id').value;
     const conferenceId = document.getElementById('rep-conference-id').value;
+    
+    // Get institution value from typeahead (hidden input) or direct input
+    const institutionHidden = document.getElementById('rep-institution-value');
+    const institutionInput = document.getElementById('rep-institution');
+    const institution = (institutionHidden?.value || institutionInput?.value || '').trim();
+    
     const data = {
         conference_id: conferenceId,
-        name: document.getElementById('rep-name').value,
-        email: document.getElementById('rep-email').value,
-        phone: document.getElementById('rep-phone').value,
-        institution: document.getElementById('rep-institution-value')?.value || document.getElementById('rep-institution')?.value
+        name: document.getElementById('rep-name').value.trim(),
+        email: document.getElementById('rep-email').value.trim(),
+        phone: document.getElementById('rep-phone').value.trim(),
+        institution: institution
     };
     
     if (!conferenceId) {
         alert('Conference ID is required');
+        return;
+    }
+    
+    if (!institution) {
+        alert('Institution is required');
         return;
     }
     
@@ -1224,4 +1277,379 @@ function copyReferralCode() {
     navigator.clipboard.writeText(referralCodeInput.value);
     alert('Referral code copied to clipboard!');
 }
+
+// ========== HERO SLIDES ==========
+
+async function loadHeroSlides() {
+    try {
+        const response = await fetch(`${API_BASE}/api/hero-slides/all`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load hero slides');
+        }
+        
+        const slides = await response.json();
+        const list = document.getElementById('hero-slides-list');
+        
+        if (!list) return;
+        
+        if (slides.length === 0) {
+            list.innerHTML = '<p class="loading">No hero slides yet. Click "+ New Slide" to create one.</p>';
+            return;
+        }
+        
+        list.innerHTML = slides.map((slide, index) => `
+            <div class="hero-slide-item glass-card" data-id="${slide.id}" data-order="${slide.order_index || index}" style="margin-bottom: 1rem; padding: 1.5rem; cursor: move;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <h3 style="color: var(--primary-green); margin: 0;">${slide.title || 'Untitled Slide'}</h3>
+                            ${slide.is_conference_slide ? '<span style="background: rgba(0, 201, 109, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.8rem; color: var(--primary-green);">🎤 Conference</span>' : ''}
+                            ${slide.is_active ? '<span style="background: rgba(0, 201, 109, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.8rem; color: var(--primary-green);">✓ Active</span>' : '<span style="background: rgba(230, 57, 70, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.8rem; color: var(--primary-red);">✗ Inactive</span>'}
+                        </div>
+                        ${slide.subtitle ? `<p style="color: var(--text-secondary); margin: 0.5rem 0;">${slide.subtitle}</p>` : ''}
+                        ${slide.conference_title ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Linked to: ${slide.conference_title}</p>` : ''}
+                        ${slide.buttons && slide.buttons.length > 0 ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">${slide.buttons.length} button(s)</p>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="action-btn" onclick="editHeroSlide(${slide.id})" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
+                        <button class="action-btn" onclick="deleteHeroSlide(${slide.id})" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--primary-red);">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Initialize drag and drop
+        initHeroSlideDragDrop();
+    } catch (error) {
+        console.error('Error loading hero slides:', error);
+        const list = document.getElementById('hero-slides-list');
+        if (list) {
+            list.innerHTML = '<p class="error-message">Failed to load hero slides. Please refresh the page.</p>';
+        }
+    }
+}
+
+function initHeroSlideDragDrop() {
+    const container = document.getElementById('hero-slides-list');
+    if (!container) return;
+    
+    const items = container.querySelectorAll('.hero-slide-item');
+    items.forEach(item => {
+        item.draggable = true;
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', item.dataset.id);
+            item.classList.add('dragging');
+        });
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+        });
+    });
+    
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(container, e.clientY);
+        const dragging = container.querySelector('.dragging');
+        if (!dragging) return;
+        
+        if (afterElement == null) {
+            container.appendChild(dragging);
+        } else {
+            container.insertBefore(dragging, afterElement);
+        }
+    });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.hero-slide-item:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// Save hero slide order
+document.getElementById('save-hero-order-btn')?.addEventListener('click', async () => {
+    const items = document.querySelectorAll('.hero-slide-item');
+    const order = Array.from(items).map((item, index) => ({
+        id: parseInt(item.dataset.id),
+        order_index: index + 1
+    }));
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/hero-slides/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ order })
+        });
+        
+        if (response.ok) {
+            alert('Slide order saved successfully!');
+            loadHeroSlides();
+        } else {
+            alert('Failed to save slide order');
+        }
+    } catch (error) {
+        console.error('Error saving order:', error);
+        alert('Network error. Please try again.');
+    }
+});
+
+// New hero slide button
+document.getElementById('new-hero-slide-btn')?.addEventListener('click', () => {
+    openHeroSlideModal();
+});
+
+function openHeroSlideModal(slide = null) {
+    const modal = document.getElementById('hero-slide-modal');
+    const form = document.getElementById('hero-slide-form');
+    if (!modal || !form) return;
+    
+    form.reset();
+    document.getElementById('hero-buttons-container').innerHTML = '';
+    
+    if (slide) {
+        document.getElementById('hero-slide-id').value = slide.id;
+        document.getElementById('hero-slide-title').value = slide.title || '';
+        document.getElementById('hero-slide-subtitle').value = slide.subtitle || '';
+        document.getElementById('hero-slide-bg-url').value = slide.background_image_path || '';
+        document.getElementById('hero-slide-active').checked = slide.is_active === 1 || slide.is_active === true;
+        document.getElementById('hero-slide-overlay').value = slide.overlay_alignment || 'left';
+        
+        if (slide.buttons && slide.buttons.length > 0) {
+            slide.buttons.forEach(btn => {
+                addHeroButton(btn);
+            });
+        }
+        
+        if (slide.is_conference_slide) {
+            document.getElementById('hero-slide-conference-note').style.display = 'block';
+        } else {
+            document.getElementById('hero-slide-conference-note').style.display = 'none';
+        }
+    } else {
+        document.getElementById('hero-slide-id').value = '';
+        document.getElementById('hero-slide-active').checked = true;
+        document.getElementById('hero-slide-overlay').value = 'left';
+        document.getElementById('hero-slide-conference-note').style.display = 'none';
+    }
+    
+    modal.style.display = 'block';
+}
+
+function closeHeroSlideModal() {
+    document.getElementById('hero-slide-modal').style.display = 'none';
+}
+
+function addHeroButton(button = null) {
+    const container = document.getElementById('hero-buttons-container');
+    const index = container.children.length;
+    
+    const buttonHtml = `
+        <div class="hero-button-item glass-card" style="margin-bottom: 1rem; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label style="margin: 0; font-weight: 600;">Button ${index + 1}</label>
+                <button type="button" class="action-btn" onclick="this.parentElement.parentElement.remove()" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; background: var(--primary-red);">Remove</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Text</label>
+                    <input type="text" class="hero-btn-text" value="${button?.text || ''}" placeholder="Button text">
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="text" class="hero-btn-url" value="${button?.url || ''}" placeholder="Button URL">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 0.5rem;">
+                <label>Style</label>
+                <select class="hero-btn-style">
+                    <option value="primary" ${button?.style === 'primary' ? 'selected' : ''}>Primary (Green)</option>
+                    <option value="secondary" ${button?.style === 'secondary' ? 'selected' : ''}>Secondary (Red)</option>
+                    <option value="outline" ${button?.style === 'outline' ? 'selected' : ''}>Outline</option>
+                </select>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', buttonHtml);
+}
+
+async function editHeroSlide(id) {
+    try {
+        const response = await fetch(`${API_BASE}/api/hero-slides/${id}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load slide');
+        }
+        
+        const slide = await response.json();
+        openHeroSlideModal(slide);
+    } catch (error) {
+        console.error('Error loading slide:', error);
+        alert('Failed to load slide details');
+    }
+}
+
+async function deleteHeroSlide(id) {
+    if (!confirm('Are you sure you want to delete this slide?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/hero-slides/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            loadHeroSlides();
+            alert('Slide deleted successfully');
+        } else {
+            const errorData = await response.json();
+            alert(`Error deleting slide: ${errorData.error || response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error deleting slide:', error);
+        alert('Network error. Please try again.');
+    }
+}
+
+// Hero slide form submission
+document.getElementById('hero-slide-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('hero-slide-id').value;
+    const buttons = [];
+    document.querySelectorAll('.hero-button-item').forEach(item => {
+        const text = item.querySelector('.hero-btn-text').value;
+        const url = item.querySelector('.hero-btn-url').value;
+        const style = item.querySelector('.hero-btn-style').value;
+        
+        if (text && url) {
+            buttons.push({ text, url, style });
+        }
+    });
+    
+    const data = {
+        title: document.getElementById('hero-slide-title').value,
+        subtitle: document.getElementById('hero-slide-subtitle').value,
+        background_image_path: document.getElementById('hero-slide-bg-url').value || null,
+        overlay_alignment: document.getElementById('hero-slide-overlay').value,
+        is_active: document.getElementById('hero-slide-active').checked,
+        buttons: buttons
+    };
+    
+    try {
+        const url = id ? `${API_BASE}/api/hero-slides/${id}` : `${API_BASE}/api/hero-slides`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            closeHeroSlideModal();
+            loadHeroSlides();
+            alert('Slide saved successfully!');
+        } else {
+            const errorData = await response.json();
+            alert(`Error saving slide: ${errorData.error || response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error saving slide:', error);
+        alert('Network error. Please try again.');
+    }
+});
+
+// Close modal handlers
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal) modal.style.display = 'none';
+    });
+});
+
+// ========== PASSWORD CHANGE ==========
+
+document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const errorDiv = document.getElementById('password-change-error');
+    const successDiv = document.getElementById('password-change-success');
+    
+    // Hide previous messages
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        errorDiv.textContent = 'New passwords do not match';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Validate password length
+    if (newPassword.length < 6) {
+        errorDiv.textContent = 'New password must be at least 6 characters long';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/change-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            successDiv.textContent = 'Password changed successfully!';
+            successDiv.style.display = 'block';
+            
+            // Clear form
+            document.getElementById('change-password-form').reset();
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        } else {
+            errorDiv.textContent = data.error || 'Failed to change password';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+    }
+});
 

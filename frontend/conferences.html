@@ -12,7 +12,7 @@
         .conferences-hero {
             padding: 140px 2rem 5rem;
             text-align: center;
-            background: linear-gradient(135deg, rgba(0, 201, 109, 0.12) 0%, rgba(230, 57, 70, 0.12) 100%);
+            background: var(--bg-secondary);
             position: relative;
             overflow: hidden;
         }
@@ -24,8 +24,8 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 30% 30%, rgba(0, 201, 109, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(230, 57, 70, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
             z-index: 0;
         }
         .conferences-hero > * {
@@ -35,11 +35,8 @@
         .conferences-hero h1 {
             font-size: clamp(2.5rem, 5vw, 4rem);
             margin-bottom: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-green), var(--primary-red));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--text-primary);
             letter-spacing: -0.02em;
         }
         .conferences-hero p {
@@ -62,13 +59,12 @@
             margin: 0 auto;
         }
         .conference-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 24px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
             padding: 0;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
             color: inherit;
             display: flex;
             flex-direction: column;
@@ -81,22 +77,24 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-green), var(--primary-red));
+            height: 3px;
+            background: var(--accent-color);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
         }
         .conference-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 48px rgba(0, 201, 109, 0.15), 0 0 0 1px rgba(0, 201, 109, 0.1);
-            border-color: rgba(0, 201, 109, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-color);
         }
         .conference-card:hover::before {
             opacity: 1;
         }
         .conference-banner {
             width: 100%;
-            height: 220px;
+            height: auto;
+            min-height: 220px;
+            max-height: 400px;
             object-fit: cover;
             border-radius: 0;
             margin: 0;
@@ -186,7 +184,8 @@
         <div class="nav-container">
             <div class="logo-container">
                 <a href="/">
-                    <img src="assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img">
+                    <img src="/assets/logo.png" alt="NextGen Logo" class="logo" id="logo-img" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='inline');">
+                    <span style="display:none; font-weight: 700; font-size: 1.5rem; color: var(--text-primary);">NextGen</span>
                 </a>
             </div>
             <ul class="nav-menu">
@@ -226,7 +225,8 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img src="assets/logo.png" alt="NextGen Logo" id="footer-logo-img">
+                        <img src="/assets/logo.png" alt="NextGen Logo" id="footer-logo-img" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='inline');">
+                        <span style="display:none; font-weight: 700; font-size: 1.5rem; color: var(--text-dark-primary);">NextGen</span>
                     </div>
                     <p>Empowering Nigerian youth through political awareness and civic engagement.</p>
                 </div>
@@ -286,19 +286,28 @@
                 }
 
                 grid.innerHTML = conferences.map(conf => {
-                    const date = new Date(conf.date);
-                    const now = new Date();
-                    const isPast = date < now;
-                    const statusClass = isPast ? 'status-past' : 'status-upcoming';
-                    const statusText = isPast ? 'Past Event' : 'Upcoming';
+                    const hasDate = conf.date && conf.date.trim() !== '';
+                    let date, isPast, statusClass, statusText;
+                    
+                    if (hasDate) {
+                        date = new Date(conf.date);
+                        const now = new Date();
+                        isPast = date < now;
+                        statusClass = isPast ? 'status-past' : 'status-upcoming';
+                        statusText = isPast ? 'Past Event' : 'Upcoming';
+                    } else {
+                        isPast = false;
+                        statusClass = 'status-upcoming';
+                        statusText = 'Coming Soon';
+                    }
 
                     return `
                         <div class="conference-card">
                             <a href="/conference/${conf.id}" style="text-decoration: none; color: inherit; display: block;">
-                                ${conf.banner ? `<img src="${conf.banner}" alt="${conf.title}" class="conference-banner">` : ''}
+                                ${conf.banner ? `<img src="${conf.banner}" alt="${conf.title}" class="conference-banner" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'220\'%3E%3Crect fill=\'%23f3f4f6\' width=\'400\' height=\'220\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-family=\'sans-serif\' font-size=\'16\'%3EImage not available%3C/text%3E%3C/svg%3E';">` : ''}
                                 <h3>${conf.title}</h3>
                                 <div class="conference-meta">
-                                    <span>📅 ${new Date(conf.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                    <span>📅 ${hasDate ? new Date(conf.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Coming Soon'}</span>
                                     ${conf.time ? `<span>🕐 ${conf.time}</span>` : ''}
                                     ${conf.venue ? `<span>📍 ${conf.venue}</span>` : ''}
                                 </div>
@@ -308,7 +317,7 @@
                             <div class="conference-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.1);">
                                 ${!isPast ? `
                                     <a href="/conference/${conf.id}/register" class="register-btn-card" style="flex: 1; padding: 0.8rem 1.5rem; background: var(--primary-green); border: none; border-radius: 10px; color: white; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s ease; box-shadow: var(--shadow-soft);">
-                                        Register Now
+                                        ${hasDate ? 'Register Now' : 'Pre-Register'}
                                     </a>
                                 ` : `
                                     <button class="register-btn-card" disabled style="flex: 1; padding: 0.8rem 1.5rem; background: rgba(0, 0, 0, 0.1); border: none; border-radius: 10px; color: var(--text-secondary); font-weight: 600; cursor: not-allowed; opacity: 0.5;">

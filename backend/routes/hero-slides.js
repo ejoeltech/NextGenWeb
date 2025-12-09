@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Admin: Get all slides
+// Admin: Get all slides (must come before /:id route)
 router.get('/all', authenticateToken, async (req, res) => {
   try {
     const slides = await query(
@@ -51,6 +51,32 @@ router.get('/all', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error fetching all hero slides:', err);
     res.status(500).json({ error: 'Failed to fetch hero slides' });
+  }
+});
+
+// Admin: Get single slide by ID (must come after /all route)
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const slides = await query(
+      `SELECT hs.*, c.title AS conference_title
+       FROM hero_slides hs
+       LEFT JOIN conferences c ON hs.conference_id = c.id
+       WHERE hs.id = ?`,
+      [id]
+    );
+    
+    if (slides.length === 0) {
+      return res.status(404).json({ error: 'Slide not found' });
+    }
+    
+    const slide = slides[0];
+    slide.buttons = slide.buttons ? JSON.parse(slide.buttons) : [];
+    
+    res.json(slide);
+  } catch (err) {
+    console.error('Error fetching hero slide:', err);
+    res.status(500).json({ error: 'Failed to fetch hero slide' });
   }
 });
 
