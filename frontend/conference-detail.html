@@ -435,6 +435,7 @@
                                 </div>
                             ` : ''}
 
+                            ${conference.registration_enabled !== 0 && conference.registration_enabled !== false ? `
                             <div class="glass-card">
                                 <h2 class="section-title">Register Now</h2>
                                 <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
@@ -444,6 +445,14 @@
                                     ${isPast ? 'Event Ended' : hasDate ? 'Pre-Register Now' : 'Pre-Register (Coming Soon)'}
                                 </a>
                             </div>
+                            ` : `
+                            <div class="glass-card">
+                                <h2 class="section-title">Registration</h2>
+                                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                                    Registration for this conference is currently closed. Please check back later or contact us for more information.
+                                </p>
+                            </div>
+                            `}
                         </div>
                     </div>
                 `;

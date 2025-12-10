@@ -291,11 +291,16 @@ const migrate = () => {
             return reject(err2);
           }
           
-          // Try to remove NOT NULL constraint from date column if it exists
-          // SQLite doesn't support ALTER COLUMN, so we'll handle this in the application code
-          // by allowing empty strings instead of NULL
-          console.log('Hero slides migration completed');
-          resolve();
+          // Add registration_enabled column to conferences (ignore if already exists)
+          db.run(`ALTER TABLE conferences ADD COLUMN registration_enabled INTEGER DEFAULT 1`, (err3) => {
+            if (err3 && !/duplicate column name/i.test(err3.message)) {
+              console.error('Error adding registration_enabled column:', err3);
+              return reject(err3);
+            }
+            
+            console.log('Hero slides migration completed');
+            resolve();
+          });
         });
       });
     });

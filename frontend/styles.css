@@ -68,8 +68,9 @@ body {
 }
 
 .logo-container .logo {
-    height: 45px;
+    height: 60px;
     width: auto;
+    transition: var(--transition);
 }
 
 .nav-menu {
@@ -702,9 +703,10 @@ body {
 }
 
 .footer-logo img {
-    height: 50px;
+    height: 60px;
     width: auto;
     margin-bottom: 1rem;
+    transition: var(--transition);
 }
 
 .footer-section h3 {
@@ -864,6 +866,15 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    /* Keep logo at original size on mobile */
+    .logo-container .logo {
+        height: 45px;
+    }
+    
+    .footer-logo img {
+        height: 50px;
+    }
+    
     .nav-menu {
         position: fixed;
         left: -100%;

@@ -519,6 +519,7 @@ document.getElementById('conference-form')?.addEventListener('submit', async (e)
         banner: document.getElementById('conf-banner').value,
         status: document.getElementById('conf-status').value,
         featured_in_slider: document.getElementById('conf-featured') ? document.getElementById('conf-featured').checked : false,
+        registration_enabled: document.getElementById('conf-registration-enabled') ? document.getElementById('conf-registration-enabled').checked : true,
         guidelines: document.getElementById('conf-guidelines').value
     };
 
@@ -633,6 +634,12 @@ function openConferenceModal(conference = null) {
         const featuredCheckbox = document.getElementById('conf-featured');
         if (featuredCheckbox) {
             featuredCheckbox.checked = conference.featured_in_slider === 1 || conference.featured_in_slider === true;
+        }
+        
+        // Set registration enabled checkbox
+        const registrationCheckbox = document.getElementById('conf-registration-enabled');
+        if (registrationCheckbox) {
+            registrationCheckbox.checked = conference.registration_enabled !== undefined ? (conference.registration_enabled === 1 || conference.registration_enabled === true) : true;
         }
         
         document.getElementById('conf-guidelines').value = conference.guidelines || '';

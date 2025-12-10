@@ -393,6 +393,16 @@
                     </p>
                 </div>
                 
+                <div class="form-group full-width" style="padding: 1rem; background: rgba(37, 99, 235, 0.05); border-radius: 10px; border-left: 4px solid var(--accent-color); margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 1.05rem;">
+                        <input type="checkbox" id="conf-registration-enabled" checked style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-color);">
+                        <span><strong>📝 Enable Registration</strong></span>
+                    </label>
+                    <p class="form-tip" style="margin-top: 0.5rem; margin-left: 0;">
+                        💡 When enabled, users can register for this conference. When disabled, the registration button will be hidden on the conference page.
+                    </p>
+                </div>
+                
                 <div class="form-group full-width">
                     <label>Speakers (JSON Format)</label>
                     <textarea id="conf-speakers" rows="5" placeholder='[{"name": "John Doe", "title": "CEO, Tech Company"}, {"name": "Jane Smith", "title": "Political Analyst"}]'></textarea>

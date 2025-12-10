@@ -39,8 +39,17 @@ async function upsertConferenceHeroSlide(conference) {
     const buttons = [{
       text: 'Learn More',
       url: `/conference/${conference.id}`,
-      style: 'primary' // primary or secondary
+      style: 'secondary'
     }];
+    
+    // Add Register Now button if registration is enabled
+    if (conference.registration_enabled !== 0 && conference.registration_enabled !== false) {
+      buttons.push({
+        text: 'Register Now',
+        url: `/conference/${conference.id}/register`,
+        style: 'primary'
+      });
+    }
 
     if (existing.length === 0) {
       // Create new slide
@@ -179,8 +188,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     const result = await run(
-      `INSERT INTO conferences (title, description, date, time, venue, address, banner, speakers, agenda, guidelines, status, featured_in_slider)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO conferences (title, description, date, time, venue, address, banner, speakers, agenda, guidelines, status, featured_in_slider, registration_enabled)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title,
         description || null,
@@ -193,7 +202,8 @@ router.post('/', authenticateToken, async (req, res) => {
         agendaJson,
         (guidelines && guidelines.trim() !== '') ? guidelines : null,
         status || 'draft',
-        featured_in_slider ? 1 : 0
+        featured_in_slider ? 1 : 0,
+        registration_enabled !== undefined ? (registration_enabled ? 1 : 0) : 1
       ]
     );
 
@@ -234,7 +244,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
       agenda,
       guidelines,
       status,
-      featured_in_slider
+      featured_in_slider,
+      registration_enabled
     } = req.body;
 
     if (!title) {
@@ -271,7 +282,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       `UPDATE conferences 
        SET title = ?, description = ?, date = ?, time = ?, venue = ?, address = ?, 
            banner = ?, speakers = ?, agenda = ?, guidelines = ?, status = ?,
-           featured_in_slider = ?,
+           featured_in_slider = ?, registration_enabled = ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
@@ -287,6 +298,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         (guidelines && guidelines.trim() !== '') ? guidelines : null,
         status || 'draft',
         featured_in_slider ? 1 : 0,
+        registration_enabled !== undefined ? (registration_enabled ? 1 : 0) : 1,
         id
       ]
     );
